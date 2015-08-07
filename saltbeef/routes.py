@@ -177,7 +177,7 @@ def random_battle():
     defender = dfn_user.creatures[0]
 
     attacker.atk_bonus = 0
-    defender.dfn_bonus = 0
+    attacker.dfn_bonus = 0
     defender.atk_bonus = 0
     defender.dfn_bonus = 0
     for i in atk_user.active_items:
@@ -220,7 +220,7 @@ def random_battle():
     for i in dfn_user.active_items:
         dfn_user.items.remove(i)
     attacker.atk_bonus = 0
-    defender.dfn_bonus = 0
+    attacker.dfn_bonus = 0
     defender.atk_bonus = 0
     defender.dfn_bonus = 0
 
