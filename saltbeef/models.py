@@ -75,6 +75,7 @@ class Trainer(db.Model):
     losses = db.Column(db.Integer)
     creatures = db.relationship(Creature, backref='trainer')
     items = db.relationship(Item, backref='trainer')
+    active_items = db.relationship(Item, backref='trainer_active')
 
     def __init__(self, name):
         self.name = name
@@ -90,3 +91,22 @@ class Trainer(db.Model):
         if trainer is None:
             trainer = Trainer(name)
         return trainer
+
+    def equip(self, item):
+        try:
+            self.items.remove(item)
+            self.items = []
+        except ValueError:
+            return False
+
+        self.active_items.append(item)
+        return True
+
+    def choose(self, creature):
+        try:
+            idx = self.creatures.index(creature)
+        except ValueError:
+            return False
+
+        self.creatures.insert(0, self.creatures.pop(idx))
+        return True

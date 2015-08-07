@@ -12,27 +12,111 @@ def index():
     })
 
 
-@app.route('/creatures/<trainer>')
-def creatures(trainer):
+@app.route('/creatures', methods=['POST'])
+def creatures():
     """
     List creatures for a trainer.
     """
-    tid = models.gen_id(trainer)
-    trainer = models.Trainer.query.get(tid)
+    name = request.form['user_name']
+    trainer = models.Trainer.get_or_create(name)
     creatures = [str(c) for c in trainer.creatures]
-    return jsonify(results=creatures)
+
+    if not items:
+        messages = [
+            'You have no creatures.'
+        ]
+    else:
+        messages = [
+            'You have these creatures:',
+            '\n'.join(['[{}] {}'.format(i, creature) for i, creature in enumerate(creatures)])
+        ]
+
+    messages.append('To choose a creature, say `/ichoose <creature number>`')
+    return '\n'.join(messages)
 
 
-@app.route('/items/<trainer>')
-def items(trainer):
+@app.route('/items', methods=['POST'])
+def items():
     """
     List items for a trainer.
     """
-    tid = models.gen_id(trainer)
-    trainer = models.Trainer.query.get(tid)
+    name = request.form['user_name']
+    trainer = models.Trainer.get_or_create(name)
     items = [str(i) for i in trainer.items]
+    equip = [str(i) for i in trainer.active_items]
 
-    return jsonify(results=items)
+    messages = []
+    if equip:
+        messages += [
+            'You have these items equipped:',
+            '\n'.join(equip)
+        ]
+
+    if items:
+        messages += [
+            'You have these items:',
+            '\n'.join(['[{}] {}'.format(i, item) for i, item in enumerate(items)])
+        ]
+
+    if not items and not equip:
+        messages = [
+            'You have no items.'
+        ]
+
+    messages.append('To equip an item, say `/equip <item number>`')
+    return '\n'.join(messages)
+
+
+@app.route('/equip', methods=['POST'])
+def equip():
+    """
+    Equip an item (one-time use)
+    """
+    name = request.form['user_name']
+    trainer = models.Trainer.get_or_create(name)
+
+    try:
+        i = int(request.form['text'])
+    except ValueError:
+        return 'That\'s not a number!'
+    except KeyError:
+        return 'Tell me the number of the item you want to equip!'
+
+    try:
+        item = trainer.items[i]
+    except IndexError:
+        return 'You don\'t have that many items!'
+
+    trainer.equip(item)
+    db.session.commit()
+
+    return 'You equipped {}'.format(item)
+
+
+@app.route('/choose', methods=['POST'])
+def choose():
+    """
+    Choose a creature.
+    """
+    name = request.form['user_name']
+    trainer = models.Trainer.get_or_create(name)
+
+    try:
+        i = int(request.form['text'])
+    except ValueError:
+        return 'That\'s not a number!'
+    except KeyError:
+        return 'Tell me the number of the creature you want to use!'
+
+    try:
+        creature = trainer.creatures[i]
+    except IndexError:
+        return 'You don\'t have that many creatures!'
+
+    trainer.choose(creature)
+    db.session.commit()
+
+    return 'You chose {}'.format(creature)
 
 
 @app.route('/battle', methods=['POST'])
@@ -123,7 +207,6 @@ def random_battle():
 
     messages.append('It dropped a *{}* for *{}*!'.format(item, winner.trainer.name))
     messages.append('*{}* is the _WINNER_!'.format(winner.trainer.name))
-    winner.trainer.items.append(item)
 
     winner.trainer.wins += 1
     loser.trainer.losses += 1
@@ -131,12 +214,16 @@ def random_battle():
     messages.append('{} has a {}W{}L record.'.format(loser.trainer.name, loser.trainer.wins, loser.trainer.losses))
 
     loser.trainer.creatures.remove(loser)
+    winner.trainer.items.append(item)
+
+    atk_user.active_items = []
+    dfn_user.active_items = []
 
     db.session.add(atk_user)
     db.session.add(dfn_user)
     db.session.commit()
 
     # Send to slack incoming webhook
-    #requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
+    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
 
-    return jsonify(results=messages)
+    return ''
