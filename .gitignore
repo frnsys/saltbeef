@@ -4,3 +4,4 @@
 *.swp
 dist/
 config.py
+*.db

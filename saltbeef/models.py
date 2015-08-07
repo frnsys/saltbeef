@@ -82,3 +82,11 @@ class Trainer(db.Model):
         self.losses = 0
         self.id = gen_id(self.name)
         self.creatures = [Creature()]
+
+    @classmethod
+    def get_or_create(cls, name):
+        id = gen_id(name)
+        trainer = cls.query.get(id)
+        if trainer is None:
+            trainer = Trainer(name)
+        return trainer

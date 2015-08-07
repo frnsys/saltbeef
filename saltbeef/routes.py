@@ -89,8 +89,15 @@ def random_battle():
     """
     Random battle between two users (for testing)
     """
-    atk_user = models.Trainer(request.form['user_name'])
-    dfn_user = models.Trainer(request.form['text'])
+    atk_user = models.Trainer.get_or_create(request.form['user_name'])
+    dfn_user = models.Trainer.get_or_create(request.form['text'])
+
+    # Use existing creature if available,
+    # otherwise create a new one
+    if not atk_user.creatures:
+        atk_user.creatures.append(models.Creature())
+    if not dfn_user.creatures:
+        dfn_user.creatures.append(models.Creature())
     attacker = atk_user.creatures[0]
     defender = dfn_user.creatures[0]
 
@@ -112,12 +119,24 @@ def random_battle():
 
     item = models.Item()
     messages.append('*{}* was _killed_!'.format(loser.name))
+
+
     messages.append('It dropped a *{}* for *{}*!'.format(item, winner.trainer.name))
     messages.append('*{}* is the _WINNER_!'.format(winner.trainer.name))
-    #winner.trainer.items.append(item)
-    #db.session.commit()
+    winner.trainer.items.append(item)
+
+    winner.trainer.wins += 1
+    loser.trainer.losses += 1
+    messages.append('{} has a {}W{}L record.'.format(winner.trainer.name, winner.trainer.wins, winner.trainer.losses))
+    messages.append('{} has a {}W{}L record.'.format(loser.trainer.name, loser.trainer.wins, loser.trainer.losses))
+
+    loser.trainer.creatures.remove(loser)
+
+    db.session.add(atk_user)
+    db.session.add(dfn_user)
+    db.session.commit()
 
     # Send to slack incoming webhook
-    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
+    #requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
 
     return jsonify(results=messages)
