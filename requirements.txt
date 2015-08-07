@@ -6,3 +6,4 @@ SQLAlchemy==1.0.8
 Werkzeug==0.10.4
 itsdangerous==0.24
 numpy==1.9.2
+requests==2.7.0

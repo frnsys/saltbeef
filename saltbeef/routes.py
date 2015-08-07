@@ -1,5 +1,7 @@
+import requests
 from flask import jsonify, request
 from saltbeef import app, db, models
+from config import SLACK_WEBHOOK_URL
 
 
 @app.route('/')
@@ -94,10 +96,10 @@ def random_battle():
     messages = []
     while attacker.current_hp > 0 and defender.current_hp > 0:
         move, attack = attacker.attack()
-        atk_msg = '{} attacked with {}!'.format(attacker.name, move)
+        atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
 
         damage = defender.defend(attack)
-        dfn_msg = '{} was hit for {} damage!'.format(defender.name, damage)
+        dfn_msg = '*{}* was hit for _{} damage_!'.format(defender.name, damage)
 
         messages += [atk_msg, dfn_msg]
         attacker, defender = defender, attacker
@@ -108,9 +110,14 @@ def random_battle():
         loser, winner = defender, attacker
 
     item = models.Item()
-    messages.append('{} was killed!'.format(loser.name))
-    messages.append('It dropped a {} for {}!'.format(item, winner.trainer.name))
+    messages.append('*{}* was _killed_!'.format(loser.name))
+    messages.append('It dropped a *{}* for *{}*!'.format(item, winner.trainer.name))
+    messages.append('*{}* is the _WINNER_!'.format(winner.trainer.name))
     #winner.trainer.items.append(item)
     #db.session.commit()
+
+    requests.post(SLACK_WEBHOOK_URL, params={
+        'text': '\n'.join(messages)
+    })
 
     return jsonify(results=messages)
