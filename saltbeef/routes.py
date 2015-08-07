@@ -1,3 +1,4 @@
+import json
 import requests
 from flask import jsonify, request
 from saltbeef import app, db, models
@@ -116,8 +117,7 @@ def random_battle():
     #winner.trainer.items.append(item)
     #db.session.commit()
 
-    requests.post(SLACK_WEBHOOK_URL, params={
-        'text': '\n'.join(messages)
-    })
+    # Send to slack incoming webhook
+    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
 
     return jsonify(results=messages)
