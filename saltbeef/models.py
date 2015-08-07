@@ -35,7 +35,7 @@ class Creature(db.Model):
         )
 
     def attack(self):
-        name = generate.move()
+        name = generate.move().title()
         return name, np.random.binomial(self.atk, 0.8)
 
     def defend(self, attack):

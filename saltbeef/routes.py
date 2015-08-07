@@ -69,7 +69,7 @@ def register():
     """
     Register a new user
     """
-    name = request.form['username']
+    name = request.form['user_name']
     user = models.Trainer(name)
     db.session.add(user)
     db.session.commit()
@@ -78,3 +78,39 @@ def register():
         'message': 'Welcome {} ~ your starting creature is {}'.format(name,
                                                                       user.creatures[0])
     })
+
+
+
+@app.route('/random_battle', methods=['POST'])
+def random_battle():
+    """
+    Random battle between two users (for testing)
+    """
+    atk_user = models.Trainer(request.form['user_name'])
+    dfn_user = models.Trainer(request.form['text'])
+    attacker = atk_user.creatures[0]
+    defender = dfn_user.creatures[0]
+
+    messages = []
+    while attacker.current_hp > 0 and defender.current_hp > 0:
+        move, attack = attacker.attack()
+        atk_msg = '{} attacked with {}!'.format(attacker.name, move)
+
+        damage = defender.defend(attack)
+        dfn_msg = '{} was hit for {} damage!'.format(defender.name, damage)
+
+        messages += [atk_msg, dfn_msg]
+        attacker, defender = defender, attacker
+
+    if attacker.current_hp < 0:
+        loser, winner = attacker, defender
+    else:
+        loser, winner = defender, attacker
+
+    item = models.Item()
+    messages.append('{} was killed!'.format(loser.name))
+    messages.append('It dropped a {} for {}!'.format(item, winner.trainer.name))
+    #winner.trainer.items.append(item)
+    #db.session.commit()
+
+    return jsonify(results=messages)

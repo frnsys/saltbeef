@@ -33,7 +33,7 @@ def name():
     if random.random() >= 0.98:
         names[0] = random.choice(prefixes) + names[0]
 
-    return ' '.join(names).title()
+    return ' '.join(names).title().replace('(', '').replace(')', '')
 
 
 def item():
@@ -46,11 +46,11 @@ def item():
     if random.random() >= 0.98:
         names[0] = random.choice(prefixes) + names[0]
 
-    return ' '.join(names).title()
+    return ' '.join(names).title().replace('(', '').replace(')', '')
 
 
 def move():
-    move = abil_mkv.generate()
+    move = abil_mkv.generate().replace('(', '').replace(')', '')
     if len(move.split(' ')) == 1:
         return ' '.join([random.choice(advs), move])
     return move
