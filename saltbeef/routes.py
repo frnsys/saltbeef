@@ -21,17 +21,17 @@ def creatures():
     trainer = models.Trainer.get_or_create(name)
     creatures = [str(c) for c in trainer.creatures]
 
-    if not items:
+    if not creatures:
         messages = [
             'You have no creatures.'
         ]
     else:
         messages = [
             'You have these creatures:',
-            '\n'.join(['[{}] {}'.format(i, creature) for i, creature in enumerate(creatures)])
+            '\n'.join(['[{}] {}'.format(i, creature) for i, creature in enumerate(creatures)]),
+            'To choose a creature, say `/ichoose <creature number>`'
         ]
 
-    messages.append('To choose a creature, say `/ichoose <creature number>`')
     return '\n'.join(messages)
 
 
@@ -42,28 +42,19 @@ def items():
     """
     name = request.form['user_name']
     trainer = models.Trainer.get_or_create(name)
-    items = [str(i) for i in trainer.items]
-    equip = [str(i) for i in trainer.active_items]
 
-    messages = []
-    if equip:
-        messages += [
-            'You have these items equipped:',
-            '\n'.join(equip)
-        ]
-
-    if items:
-        messages += [
-            'You have these items:',
-            '\n'.join(['[{}] {}'.format(i, item) for i, item in enumerate(items)])
-        ]
-
-    if not items and not equip:
+    if not trainer.items:
         messages = [
             'You have no items.'
         ]
+    else:
+        messages = [
+            'You have these items:',
+            '\n'.join(['[{}] {} {}'.format(i, item, '(equipped)' if item.active else '')
+                       for i, item in enumerate(trainer.items)]),
+            'To equip an item, say `/equip <item number>`'
+        ]
 
-    messages.append('To equip an item, say `/equip <item number>`')
     return '\n'.join(messages)
 
 
@@ -185,6 +176,15 @@ def random_battle():
     attacker = atk_user.creatures[0]
     defender = dfn_user.creatures[0]
 
+    attacker.atk_bonus = 0
+    defender.dfn_bonus = 0
+    defender.atk_bonus = 0
+    defender.dfn_bonus = 0
+    for i in atk_user.active_items:
+        attacker.use_item(i)
+    for i in dfn_user.active_items:
+        defender.use_item(i)
+
     messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
     while attacker.current_hp > 0 and defender.current_hp > 0:
         move, attack = attacker.attack()
@@ -196,15 +196,14 @@ def random_battle():
         messages += [atk_msg, dfn_msg]
         attacker, defender = defender, attacker
 
-    if attacker.current_hp < 0:
+    if attacker.current_hp <= 0:
         loser, winner = attacker, defender
     else:
         loser, winner = defender, attacker
 
-    item = models.Item()
     messages.append('*{}* was _killed_!'.format(loser.name))
 
-
+    item = models.Item()
     messages.append('It dropped a *{}* for *{}*!'.format(item, winner.trainer.name))
     messages.append('*{}* is the _WINNER_!'.format(winner.trainer.name))
 
@@ -216,8 +215,14 @@ def random_battle():
     loser.trainer.creatures.remove(loser)
     winner.trainer.items.append(item)
 
-    atk_user.active_items = []
-    dfn_user.active_items = []
+    for i in atk_user.active_items:
+        atk_user.items.remove(i)
+    for i in dfn_user.active_items:
+        dfn_user.items.remove(i)
+    attacker.atk_bonus = 0
+    defender.dfn_bonus = 0
+    defender.atk_bonus = 0
+    defender.dfn_bonus = 0
 
     db.session.add(atk_user)
     db.session.add(dfn_user)
