@@ -110,55 +110,6 @@ def choose():
     return 'You chose {}'.format(creature)
 
 
-@app.route('/battle', methods=['POST'])
-def battle():
-    """
-    Battle two creatures against each other.
-    """
-    attacker = request.form['attacker']
-    defender = request.form['defender']
-    aid = models.gen_id(attacker)
-    did = models.gen_id(defender)
-
-    attacker = models.Creature.query.get(aid)
-    defender = models.Creature.query.get(did)
-
-    move, attack = attacker.attack()
-    atk_msg = '{} attacked with {}!'.format(attacker.name, move)
-
-    damage = defender.defend(attack)
-    dfn_msg = '{} was hit for {} damage!'.format(defender.name, damage)
-
-    messages = [atk_msg, dfn_msg]
-
-    if defender.current_hp <= 0:
-        item = models.Item()
-        messages.append('{} was killed!'.format(defender.name))
-        messages.append('It dropped a {} for {}!'.format(item, attacker.trainer.name))
-        attacker.trainer.items.append(item)
-
-    db.session.commit()
-
-    return jsonify(results=messages)
-
-
-@app.route('/register', methods=['POST'])
-def register():
-    """
-    Register a new user
-    """
-    name = request.form['user_name']
-    user = models.Trainer(name)
-    db.session.add(user)
-    db.session.commit()
-
-    return jsonify(results={
-        'message': 'Welcome {} ~ your starting creature is {}'.format(name,
-                                                                      user.creatures[0])
-    })
-
-
-
 @app.route('/random_battle', methods=['POST'])
 def random_battle():
     """
