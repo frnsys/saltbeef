@@ -94,7 +94,7 @@ def random_battle():
     attacker = atk_user.creatures[0]
     defender = dfn_user.creatures[0]
 
-    messages = []
+    messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
     while attacker.current_hp > 0 and defender.current_hp > 0:
         move, attack = attacker.attack()
         atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
