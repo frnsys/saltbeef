@@ -82,7 +82,7 @@ def creatures(trainer):
     """
     List creatures for a trainer.
     """
-    creatures = [str(c) for c in trainer.creatures]
+    creatures = trainer.creatures
 
     if not creatures:
         messages = [
@@ -91,7 +91,7 @@ def creatures(trainer):
     else:
         messages = [
             'You have these creatures:',
-            '\n'.join(['[{}] {}'.format(i, creature) for i, creature in enumerate(creatures)]),
+            '\n'.join(['[{}] {} {}'.format(i, creature, '<{}>'.format(creature.image) if creature.image else '') for i, creature in enumerate(creatures)]),
             'To choose a creature, say `/pokemon ichoose <creature #>`'
         ]
 
@@ -198,8 +198,26 @@ def battle(atk_user, target_user):
     messages.append('{} has a {}W{}L record.'.format(winner.trainer.name, winner.trainer.wins, winner.trainer.losses))
     messages.append('{} has a {}W{}L record.'.format(loser.trainer.name, loser.trainer.wins, loser.trainer.losses))
 
-    loser.trainer.creatures.remove(loser)
+    # Send to slack incoming webhook
+    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({
+        'text': '\n'.join(messages),
+        'attachments': [{
+            'title': 'WINNER',
+            'fallback': winner.name,
+            'text': '{} ({})'.format(winner.name, winner.trainer.name),
+            'color': '#22D683',
+            'image_url': winner.image
+        }, {
+            'title': 'LOSER',
+            'fallback': loser.name,
+            'text': '{} ({})'.format(loser.name, loser.trainer.name),
+            'color': '#D73F33',
+            'image_url': loser.image
+        }]
+    }))
+
     loser.trainer.creatures.append(models.Creature())
+    loser.trainer.creatures.remove(loser)
     winner.trainer.items.append(item)
 
     for i in atk_user.active_items:
@@ -214,23 +232,5 @@ def battle(atk_user, target_user):
     db.session.add(atk_user)
     db.session.add(dfn_user)
     db.session.commit()
-
-    # Send to slack incoming webhook
-    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({
-        'text': '\n'.join(messages),
-        'attachments': [{
-            'title': 'WINNER' if winner == attacker else 'LOSER',
-            'fallback': attacker.name,
-            'text': '{} ({})'.format(attacker.name, atk_user.name),
-            'color': '#22D683' if winner == attacker else '#D73F33',
-            'image_url': attacker.image
-        }, {
-            'title': 'WINNER' if winner == defender else 'LOSER',
-            'fallback': defender.name,
-            'text': '{} ({})'.format(defender.name, dfn_user.name),
-            'color': '#22D683' if winner == defender else '#D73F33',
-            'image_url': defender.image
-        }]
-    }))
 
     return ''

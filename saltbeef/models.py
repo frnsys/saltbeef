@@ -26,6 +26,7 @@ class Creature(db.Model):
         self.atk = np.random.binomial(20, 0.4)
         self.dfn = np.random.binomial(10, 0.4)
         self.current_hp = self.hp
+        self.image = ''
 
         image_thread = Thread(target=self.make_img)
         image_thread.start()
@@ -53,7 +54,7 @@ class Creature(db.Model):
 
     def defend(self, attack):
         defense = np.random.binomial(self.dfn + self.dfn_bonus, 0.8)/10
-        damage = int(attack * (1 - defense))
+        damage = max(0, int(attack * (1 - defense)))
         self.current_hp -= damage
         return damage
 
