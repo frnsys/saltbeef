@@ -216,14 +216,14 @@ def battle(atk_user, target_user):
         'attachments': [{
             'title': 'WINNER' if winner == attacker else 'LOSER',
             'fallback': attacker.name,
-            'text': attacker.name,
-            'color': '#D73F33',
+            'text': '{} ({})'.format(attacker.name, attacker.trainer.name),
+            'color': '#22D683' if winner == defender else '#D73F33',
             'image_url': attacker.image
         }, {
             'title': 'WINNER' if winner == defender else 'LOSER',
             'fallback': defender.name,
-            'text': defender.name,
-            'color': '#D73F33',
+            'text': '{} ({})'.format(defender.name, defender.trainer.name),
+            'color': '#22D683' if winner == defender else '#D73F33',
             'image_url': defender.image
         }]
     }))
