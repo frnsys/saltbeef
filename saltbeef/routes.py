@@ -166,6 +166,9 @@ def battle(atk_user, target_user):
     """
     Battle between two users
     """
+    if target_user[0] == '@':
+        target_user = target_user[1:]
+
     if target_user == atk_user.name:
         target_user = 'EVIL-{}'.format(target_user)
 
