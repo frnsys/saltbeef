@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from hashlib import md5
+from threading import Thread
 from saltbeef import db, generate
 
 
@@ -25,7 +26,17 @@ class Creature(db.Model):
         self.atk = np.random.binomial(20, 0.4)
         self.dfn = np.random.binomial(10, 0.4)
         self.current_hp = self.hp
+
+        image_thread = Thread(target=self.make_img)
+        image_thread.start()
+
+    def make_img(self):
         self.image = generate.image(self.name, url_only=True, force_mixture=True)
+        db.session.add(self)
+        db.session.commit()
+        #with open('/tmp/test.txt', 'a') as f:
+            #f.write(self.image)
+        #db.session.commit()
 
     def __repr__(self):
         return '{} ({}ATK {}DFN {}/{}HP)'.format(

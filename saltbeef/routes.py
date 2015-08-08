@@ -48,6 +48,9 @@ def index():
     cmd, args = parse_slack_cmd(request.form['text'])
     trainer = models.Trainer.get_or_create(name)
 
+    db.session.add(trainer)
+    db.session.commit()
+
     if cmd == 'creatures':
         return creatures(trainer, *args)
     elif cmd == 'items':
@@ -67,9 +70,6 @@ def index():
             '- `creatures` - list your creatures',
             '- `ichoose <creature #>` - choose a creature for your next battle'
         ])
-
-    db.session.add(trainer)
-    db.session.commit()
 
     return ''
 
