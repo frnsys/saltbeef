@@ -2,6 +2,11 @@ For simplicity, this just runs off of `sqlite`.
 
 ## Setup
 
+`Pillow` has a few prerequisites -
+
+- on OSX: `brew install libtiff libjpeg webp little-cms2`
+- on Ubuntu 14.04: `sudo apt-get install libtiff5-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python-tk`
+
 To setup, from a Python interpreter do:
 
     from saltbeef import db

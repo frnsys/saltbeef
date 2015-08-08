@@ -68,6 +68,9 @@ def index():
             '- `ichoose <creature #>` - choose a creature for your next battle'
         ])
 
+    db.session.add(trainer)
+    db.session.commit()
+
     return ''
 
 
