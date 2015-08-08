@@ -10,7 +10,8 @@ valid_cmds = {
     'items': [],
     'equip': [int],
     'creatures': [],
-    'ichoose': [int]
+    'ichoose': [int],
+    'help': []
 }
 
 def parse_slack_cmd(input):
@@ -53,6 +54,15 @@ def index():
         return choose(trainer, *args)
     elif cmd == 'battle':
         return battle(trainer, *args)
+    elif cmd == 'help':
+        return '\n'.join([
+            'The following commands are available:',
+            '- `battle <username>` - fight a user',
+            '- `items` - list your items',
+            '- `equip <item #>` equip an item for the next battle (one-time use)',
+            '- `creatures` - list your creatures',
+            '- `ichoose <creature #>` - choose a creature for your next battle'
+        ])
 
     return ''
 
@@ -71,7 +81,7 @@ def creatures(trainer):
         messages = [
             'You have these creatures:',
             '\n'.join(['[{}] {}'.format(i, creature) for i, creature in enumerate(creatures)]),
-            'To choose a creature, say `/ichoose <creature number>`'
+            'To choose a creature, say `/pokemon ichoose <creature #>`'
         ]
 
     return '\n'.join(messages)
@@ -90,7 +100,7 @@ def items(trainer):
             'You have these items:',
             '\n'.join(['[{}] {} {}'.format(i, item, '(equipped)' if item.active else '')
                        for i, item in enumerate(trainer.items)]),
-            'To equip an item, say `/equip <item number>`'
+            'To equip an item, say `/pokemon equip <item #>`'
         ]
 
     return '\n'.join(messages)
