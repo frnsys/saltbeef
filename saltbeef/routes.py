@@ -199,6 +199,7 @@ def battle(atk_user, target_user):
     messages.append('{} has a {}W{}L record.'.format(loser.trainer.name, loser.trainer.wins, loser.trainer.losses))
 
     loser.trainer.creatures.remove(loser)
+    loser.trainer.creatures.append(models.Creature())
     winner.trainer.items.append(item)
 
     for i in atk_user.active_items:
