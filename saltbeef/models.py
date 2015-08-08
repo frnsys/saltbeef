@@ -19,8 +19,11 @@ class Creature(db.Model):
     current_hp = db.Column(db.Integer)
     trainer_id = db.Column(db.String, db.ForeignKey('trainer.id'))
 
-    def __init__(self):
-        self.name = generate.name()
+    def __init__(self, name=None):
+        if name is None:
+            self.name = generate.name()
+        else:
+            self.name = name
         self.id = gen_id(self.name)
         self.hp = np.random.binomial(40, 0.4)
         self.atk = np.random.binomial(20, 0.4)

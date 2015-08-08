@@ -13,7 +13,8 @@ valid_cmds = {
     'ichoose': [int],
     'help': [],
     'capture': [],
-    'leaderboard': []
+    'leaderboard': [],
+    'spawn': [str]
 }
 
 def parse_slack_cmd(input):
@@ -71,6 +72,8 @@ def index():
         return capture(trainer, *args)
     elif cmd == 'leaderboard':
         return leaderboard(trainer)
+    elif cmd == 'spawn':
+        return spawn(trainer, *args)
     elif cmd == 'help':
         return '\n'.join([
             'The following commands are available:',
@@ -111,6 +114,17 @@ def capture(trainer):
     'Capture' a new creature.
     """
     creature = models.Creature()
+    trainer.creatures.append(creature)
+    db.session.add(trainer)
+    db.session.commit()
+    return 'You captured a {}!'.format(creature)
+
+
+def spawn(trainer, name):
+    """
+    'Spawn' a new creature.
+    """
+    creature = models.Creature(name=name)
     trainer.creatures.append(creature)
     db.session.add(trainer)
     db.session.commit()
