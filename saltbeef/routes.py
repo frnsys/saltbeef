@@ -217,7 +217,7 @@ def battle(atk_user, target_user):
             'title': 'WINNER' if winner == attacker else 'LOSER',
             'fallback': attacker.name,
             'text': '{} ({})'.format(attacker.name, atk_user.name),
-            'color': '#22D683' if winner == defender else '#D73F33',
+            'color': '#22D683' if winner == attacker else '#D73F33',
             'image_url': attacker.image
         }, {
             'title': 'WINNER' if winner == defender else 'LOSER',
