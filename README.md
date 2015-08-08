@@ -24,6 +24,4 @@ Then from within the Slack channel you setup, you can run `/saltbeef help` to se
 
 ## To Do
 
-- clean up code
 - add in experience/leveling up/_EVOLUTION_??
-- images

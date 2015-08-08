@@ -30,12 +30,14 @@ def image(name, url_only=False, force_mixture=False, mixture_size=(400,250)):
         elif len(parts) == 1:
             img = parts[0]
             mask = Image.open(random.choice(masks))
+            mask = fit_image(mask, mixture_size)
             mimg = mask_images(img, img, mask, mixture_size)
             data = img_to_b64(mimg)
 
         else:
             parts = random.sample(parts, 2)
             mask = Image.open(random.choice(masks))
+            mask = fit_image(mask, mixture_size)
             mimg = mask_images(*parts, mask=mask, target_size=mixture_size)
             data = img_to_b64(mimg)
 
@@ -68,13 +70,20 @@ def download_image(url):
     req = request.Request(url, headers={'User-Agent': 'Chrome'})
     resp = request.urlopen(req)
     data = io.BytesIO(resp.read())
-    return Image.open(data)
+    try:
+        return Image.open(data)
+    except OSError:
+        return None
 
 
 def blend_images(url1, url2, target_size=(400, 250)):
     images = []
     for url in [url1, url2]:
         img = download_image(url)
+        # If the image was malformed or something,
+        # just make a blank image
+        if img is None:
+            img = Image.new('RGBA', target_size, color=1)
         img = img.convert('RGBA')
         images.append(img)
 
@@ -88,7 +97,6 @@ def blend_images(url1, url2, target_size=(400, 250)):
 
 def resize_image(img, target_size):
     Point = namedtuple('Point', ['x', 'y'])
-
     size = Point(*img.size)
     target_size = Point(*target_size)
 
@@ -114,7 +122,38 @@ def resize_image(img, target_size):
         u = int(y_center - target_size.y/2)
         d = int(y_center + target_size.y/2)
 
-    return img.crop((l,u,r,d))
+    img = img.crop((l,u,r,d))
+
+    # Sometimes we may be one pixel off,
+    # so just adjust if necessary
+    if img.size != target_size:
+        img = img.resize(target_size)
+
+    return img
+
+
+def fit_image(img, target_size):
+    Point = namedtuple('Point', ['x', 'y'])
+    size = Point(*img.size)
+    target_size = Point(*target_size)
+
+    # Scale as needed
+    x_scale = target_size.x/size.x
+    y_scale = target_size.y/size.y
+    scale_factor = min(x_scale, y_scale)
+    scaled_size = Point(*[int(d*scale_factor) for d in size])
+    img = img.resize(scaled_size)
+
+    # Place on background
+    back = Image.new('RGBA', target_size, color=1)
+
+    l = int(target_size.x/2 - scaled_size.x/2)
+    r = int(target_size.x/2 + scaled_size.x/2)
+    u = int(target_size.y/2 - scaled_size.y/2)
+    d = int(target_size.y/2 + scaled_size.y/2)
+    back.paste(img, (l,u,r,d))
+
+    return back
 
 
 def mask_images(url1, url2, mask, target_size=(400, 250)):
@@ -124,6 +163,10 @@ def mask_images(url1, url2, mask, target_size=(400, 250)):
     images = []
     for url in [url1, url2]:
         img = download_image(url)
+        # If the image was malformed or something,
+        # just make a blank image
+        if img is None:
+            img = Image.new('RGBA', target_size, color=1)
         img = img.convert('RGBA')
         images.append(img)
 
