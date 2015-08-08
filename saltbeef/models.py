@@ -32,12 +32,14 @@ class Creature(db.Model):
         image_thread.start()
 
     def make_img(self):
-        self.image = generate.image(self.name, url_only=True, force_mixture=True)
-        db.session.add(self)
-        db.session.commit()
-        #with open('/tmp/test.txt', 'a') as f:
-            #f.write(self.image)
-        #db.session.commit()
+        try:
+            self.image = generate.image(self.name, url_only=True, force_mixture=True)
+            if self.image == '#':
+                self.image = 'https://i.imgur.com/gxHhYCb.gif'
+            db.session.add(self)
+            db.session.commit()
+        except Exception:
+            self.image = 'https://i.imgur.com/gxHhYCb.gif'
 
     def __repr__(self):
         return '{} ({}ATK {}DFN {}/{}HP)'.format(

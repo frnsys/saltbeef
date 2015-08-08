@@ -11,7 +11,8 @@ valid_cmds = {
     'equip': [int],
     'creatures': [],
     'ichoose': [int],
-    'help': []
+    'help': [],
+    'capture': []
 }
 
 def parse_slack_cmd(input):
@@ -65,6 +66,8 @@ def index():
         return choose(trainer, *args)
     elif cmd == 'battle':
         return battle(trainer, *args)
+    elif cmd == 'capture':
+        return capture(trainer, *args)
     elif cmd == 'help':
         return '\n'.join([
             'The following commands are available:',
@@ -72,7 +75,8 @@ def index():
             '- `items` - list your items',
             '- `equip <item #>` equip an item for the next battle (one-time use)',
             '- `creatures` - list your creatures',
-            '- `ichoose <creature #>` - choose a creature for your next battle'
+            '- `ichoose <creature #>` - choose a creature for your next battle',
+            '- `capture` - catch a new creature',
         ])
 
     return ''
@@ -96,6 +100,17 @@ def creatures(trainer):
         ]
 
     return '\n'.join(messages)
+
+
+def capture(trainer):
+    """
+    'Capture' a new creature.
+    """
+    creature = models.Creature()
+    trainer.creatures.append(creature)
+    db.session.add(trainer)
+    db.session.commit()
+    return 'You captured a {}!'.format(creature)
 
 
 def items(trainer):
@@ -151,6 +166,9 @@ def battle(atk_user, target_user):
     """
     Battle between two users
     """
+    if target_user == atk_user.name:
+        target_user = 'EVIL-{}'.format(target_user)
+
     dfn_user = models.Trainer.get_or_create(target_user)
 
     # Use existing creature if available,
