@@ -28,7 +28,7 @@ def image(name, url_only=False, force_mixture=False, mixture_size=(400,250)):
             return '#'
 
         elif len(parts) == 1:
-            img = download_image(parts[0])
+            img = parts[0]
             mask = Image.open(random.choice(masks))
             mimg = mask_images(img, img, mask, mixture_size)
             data = img_to_b64(mimg)
