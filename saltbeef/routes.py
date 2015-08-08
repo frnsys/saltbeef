@@ -12,7 +12,8 @@ valid_cmds = {
     'creatures': [],
     'ichoose': [int],
     'help': [],
-    'capture': []
+    'capture': [],
+    'leaderboard': []
 }
 
 def parse_slack_cmd(input):
@@ -68,6 +69,8 @@ def index():
         return battle(trainer, *args)
     elif cmd == 'capture':
         return capture(trainer, *args)
+    elif cmd == 'leaderboard':
+        return leaderboard(trainer)
     elif cmd == 'help':
         return '\n'.join([
             'The following commands are available:',
@@ -77,6 +80,7 @@ def index():
             '- `creatures` - list your creatures',
             '- `ichoose <creature #>` - choose a creature for your next battle',
             '- `capture` - catch a new creature',
+            '- `leaderboard` - view the best trainers',
         ])
 
     return ''
@@ -145,6 +149,26 @@ def equip(trainer, item_id):
     db.session.commit()
 
     return 'You equipped {}'.format(item)
+
+
+def leaderboard(trainer):
+    leaders = models.Trainer.query.order_by(models.Trainer.wins.desc()).limit(10).all()
+
+    messages = [
+        '*LEADERBOARD*',
+    ] + ['{} ~ {}W {}L'.format(t.name, t.wins, t.losses) for t in leaders]
+
+    # Send to slack incoming webhook
+    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({
+        'text': '\n'.join(messages),
+        'attachments': [{
+            'title': 'TOP TRAINER',
+            'fallback': leaders[0].name,
+            'text': '{} is the best trainer!'.format(leaders[0].name),
+            'color': '#22D683'
+        }]
+    }))
+    return ''
 
 
 def choose(trainer, creature_id):
