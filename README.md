@@ -25,3 +25,4 @@ Then from within the Slack channel you setup, you can run `/saltbeef help` to se
 ## To Do
 
 - add in experience/leveling up/_EVOLUTION_??
+- add in types and strengths/weaknesses??
