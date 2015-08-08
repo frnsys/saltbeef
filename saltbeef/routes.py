@@ -215,13 +215,13 @@ def battle(atk_user, target_user):
             'fallback': attacker.name,
             'text': attacker.name,
             'color': '#D73F33',
-            'thumb_url': attacker.image
+            'image_url': attacker.image
         }, {
             'title': 'WINNER' if winner == defender else 'LOSER',
             'fallback': defender.name,
             'text': defender.name,
             'color': '#D73F33',
-            'thumb_url': defender.image
+            'image_url': defender.image
         }]
     }))
 
