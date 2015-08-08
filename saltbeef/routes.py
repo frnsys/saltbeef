@@ -225,8 +225,8 @@ def battle(atk_user, target_user):
     attacker = atk_user.active_creature
     defender = dfn_user.active_creature
 
-    messages.append('*{}* chose *{}*!'.format(atk_user.name, attacker))
-    messages.append('*{}* chose *{}*!'.format(dfn_user.name, defender))
+    messages.append('*{}* sent out *{}*!'.format(atk_user.name, attacker))
+    messages.append('*{}* sent out *{}*!'.format(dfn_user.name, defender))
 
     # Apply items
     attacker.atk_bonus = 0
@@ -244,7 +244,7 @@ def battle(atk_user, target_user):
         move, attack, crit = attacker.attack()
 
         if not crit:
-            atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
+            atk_msg = '*{}* used *{}*!'.format(attacker.name, move)
         else:
             atk_msg = '*{}* landed a *CRITICAL HIT* with *{}*!'.format(attacker.name, move)
 
