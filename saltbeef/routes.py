@@ -230,7 +230,7 @@ def battle(atk_user, target_user):
             atk_msg = '*{}* landed a *CRITICAL HIT* with *{}*!'.format(attacker.name, move)
 
         damage = defender.defend(attack)
-        dfn_msg = '*{}* was hit for _{} damage_!'.format(defender.name, damage)
+        dfn_msg = '> {} was hit for _{} damage_!'.format(defender.name, damage)
 
         messages += [atk_msg, dfn_msg]
         attacker, defender = defender, attacker
