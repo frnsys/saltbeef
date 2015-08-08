@@ -208,6 +208,21 @@ def battle(atk_user, target_user):
     db.session.commit()
 
     # Send to slack incoming webhook
-    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text':'\n'.join(messages)}))
+    requests.post(SLACK_WEBHOOK_URL, data=json.dumps({
+        'text': '\n'.join(messages),
+        'attachments': [{
+            'title': 'WINNER' if winner == attacker else 'LOSER',
+            'fallback': attacker.name,
+            'text': attacker.name,
+            'color': '#D73F33',
+            'thumb_url': attacker.image
+        }, {
+            'title': 'WINNER' if winner == defender else 'LOSER',
+            'fallback': defender.name,
+            'text': defender.name,
+            'color': '#D73F33',
+            'thumb_url': defender.image
+        }]
+    }))
 
     return ''

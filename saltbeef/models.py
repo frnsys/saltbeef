@@ -14,6 +14,7 @@ class Creature(db.Model):
     hp = db.Column(db.Integer)
     atk = db.Column(db.Integer)
     dfn = db.Column(db.Integer)
+    image = db.Column(db.String)
     current_hp = db.Column(db.Integer)
     trainer_id = db.Column(db.String, db.ForeignKey('trainer.id'))
 
@@ -24,6 +25,7 @@ class Creature(db.Model):
         self.atk = np.random.binomial(20, 0.4)
         self.dfn = np.random.binomial(10, 0.4)
         self.current_hp = self.hp
+        self.image = generate.image(self.name, url_only=True, force_mixture=True)
 
     def __repr__(self):
         return '{} ({}ATK {}DFN {}/{}HP)'.format(
