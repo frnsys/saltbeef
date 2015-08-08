@@ -222,8 +222,12 @@ def battle(atk_user, target_user):
         messages.append('*{}* used *{}*!'.format(dfn_user.name, i))
 
     while attacker.current_hp > 0 and defender.current_hp > 0:
-        move, attack = attacker.attack()
-        atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
+        move, attack, crit = attacker.attack()
+
+        if not crit:
+            atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
+        else:
+            atk_msg = '*{}* landed a *CRITICAL HIT* with *{}*!'.format(attacker.name, move)
 
         damage = defender.defend(attack)
         dfn_msg = '*{}* was hit for _{} damage_!'.format(defender.name, damage)

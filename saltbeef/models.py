@@ -51,8 +51,13 @@ class Creature(db.Model):
         )
 
     def attack(self):
+        critical = False
         name = generate.move().title()
-        return name, np.random.binomial(self.atk + self.atk_bonus, 0.8)
+        atk = np.random.binomial(self.atk + self.atk_bonus, 0.8)
+        if random.random() > 0.98:
+            critical = True
+            atk *= 1.5
+        return name, atk, critical
 
     def defend(self, attack):
         defense = np.random.binomial(self.dfn + self.dfn_bonus, 0.8)/10
