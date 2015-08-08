@@ -24,12 +24,12 @@ def parse_slack_cmd(input):
     cmd = parts[0]
     raw_args = parts[1:]
     if cmd not in valid_cmds:
-        return 'Invalid command'
+        raise Exception('Invalid command')
 
     # Validate number of arguments
     valid_args = valid_cmds[cmd]
     if len(raw_args) != len(valid_args):
-        return '{} accepts {} arguments, not {}.'.format(cmd, len(valid_args), len(raw_args))
+        raise Exception('{} accepts {} arguments, not {}.'.format(cmd, len(valid_args), len(raw_args)))
 
     # Validate argument types
     args = []
@@ -37,7 +37,7 @@ def parse_slack_cmd(input):
         try:
             args.append(arg_type(arg))
         except ValueError:
-            return '{} is not a {}!'.format(arg, arg_type)
+            raise Exception('{} is not a {}!'.format(arg, arg_type))
 
     return cmd, args
 
@@ -45,7 +45,11 @@ def parse_slack_cmd(input):
 @app.route('/', methods=['POST'])
 def index():
     name = request.form['user_name']
-    cmd, args = parse_slack_cmd(request.form['text'])
+    try:
+        cmd, args = parse_slack_cmd(request.form['text'])
+    except Exception as e:
+        return str(e)
+
     trainer = models.Trainer.get_or_create(name)
 
     db.session.add(trainer)
