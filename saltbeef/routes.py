@@ -15,6 +15,10 @@ valid_cmds = {
 }
 
 def parse_slack_cmd(input):
+    """
+    Parse and validate commands from the `text` key
+    that Slack provides.
+    """
     parts = input.split(' ')
 
     cmd = parts[0]
