@@ -4,7 +4,7 @@ import random
 import requests
 import config
 from glob import glob
-from PIL import Image
+from PIL import Image, ImageChops
 from urllib import request, parse, error
 from collections import namedtuple
 
@@ -32,6 +32,7 @@ def image(name, url_only=False, force_mixture=False, mixture_size=(400,250)):
             mask = Image.open(random.choice(masks))
             mask = fit_image(mask, mixture_size)
             mimg = mask_images(img, img, mask, mixture_size)
+            mimg = ImageChops.add(mask, mimg)
             data = img_to_b64(mimg)
 
         else:
@@ -39,6 +40,7 @@ def image(name, url_only=False, force_mixture=False, mixture_size=(400,250)):
             mask = Image.open(random.choice(masks))
             mask = fit_image(mask, mixture_size)
             mimg = mask_images(*parts, mask=mask, target_size=mixture_size)
+            mimg = ImageChops.add(mask, mimg)
             data = img_to_b64(mimg)
 
         if url_only:
