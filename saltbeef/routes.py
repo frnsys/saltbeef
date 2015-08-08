@@ -207,16 +207,20 @@ def battle(atk_user, target_user):
     attacker = atk_user.creatures[0]
     defender = dfn_user.creatures[0]
 
+    messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
+
+    # Apply items
     attacker.atk_bonus = 0
     attacker.dfn_bonus = 0
     defender.atk_bonus = 0
     defender.dfn_bonus = 0
     for i in atk_user.active_items:
         attacker.use_item(i)
+        messages.append('*{}* used *{}*!'.format(atk_user.name, i))
     for i in dfn_user.active_items:
         defender.use_item(i)
+        messages.append('*{}* used *{}*!'.format(dfn_user.name, i))
 
-    messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
     while attacker.current_hp > 0 and defender.current_hp > 0:
         move, attack = attacker.attack()
         atk_msg = '*{}* attacked with *{}*!'.format(attacker.name, move)
