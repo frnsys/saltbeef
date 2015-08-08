@@ -18,6 +18,7 @@ class Creature(db.Model):
     image = db.Column(db.String)
     current_hp = db.Column(db.Integer)
     trainer_id = db.Column(db.String, db.ForeignKey('trainer.id'))
+    active = db.Column(db.Boolean, default=False)
 
     def __init__(self, name=None):
         if name is None:
@@ -106,7 +107,7 @@ class Trainer(db.Model):
     name = db.Column(db.String)
     wins = db.Column(db.Integer)
     losses = db.Column(db.Integer)
-    creatures = db.relationship(Creature, backref='trainer')
+    creatures = db.relationship(Creature, backref='trainer', lazy='dynamic')
     items = db.relationship(Item, backref='trainer')
     active_items = db.relationship(Item, backref='trainer_active')
 
@@ -140,10 +141,24 @@ class Trainer(db.Model):
         return [i for i in self.items if i.active]
 
     def choose(self, creature):
-        try:
-            idx = self.creatures.index(creature)
-        except ValueError:
+        if creature not in self.creatures:
             return False
 
-        self.creatures.insert(0, self.creatures.pop(idx))
+        for c in self.creatures.filter(Creature.active==True):
+            c.active = False
+
+        creature.active = True
         return True
+
+    @property
+    def active_creature(self):
+        c = self.creatures.filter(Creature.active==True).first()
+        if c is not None:
+            return c
+
+        # Create a new creature if necessary
+        if not self.creatures:
+            self.creatures.append(Creature())
+
+        # Default to the first creature
+        return self.creatures[0]

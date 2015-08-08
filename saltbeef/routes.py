@@ -102,7 +102,12 @@ def creatures(trainer):
     else:
         messages = [
             'You have these creatures:',
-            '\n'.join(['[{}] {} {}'.format(i, creature, '<{}>'.format(creature.image) if creature.image else '') for i, creature in enumerate(creatures)]),
+            '\n'.join(['[{}] {} {} {}'.format(
+                i,
+                creature,
+                '<{}>'.format(creature.image) if creature.image else '',
+                '(Active)' if creature.active else '')
+                for i, creature in enumerate(creatures)]),
             'To choose a creature, say `/pokemon ichoose <creature #>`'
         ]
 
@@ -195,6 +200,7 @@ def choose(trainer, creature_id):
         return 'You don\'t have that many creatures!'
 
     trainer.choose(creature)
+    db.session.add(trainer)
     db.session.commit()
 
     return 'You chose {}'.format(creature)
@@ -212,16 +218,15 @@ def battle(atk_user, target_user):
 
     dfn_user = models.Trainer.get_or_create(target_user)
 
+    messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
+
     # Use existing creature if available,
     # otherwise create a new one
-    if not atk_user.creatures:
-        atk_user.creatures.append(models.Creature())
-    if not dfn_user.creatures:
-        dfn_user.creatures.append(models.Creature())
-    attacker = atk_user.creatures[0]
-    defender = dfn_user.creatures[0]
+    attacker = atk_user.active_creature
+    defender = dfn_user.active_creature
 
-    messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
+    messages.append('*{}* chose *{}*!'.format(atk_user.name, attacker))
+    messages.append('*{}* chose *{}*!'.format(dfn_user.name, defender))
 
     # Apply items
     attacker.atk_bonus = 0
@@ -269,13 +274,13 @@ def battle(atk_user, target_user):
     requests.post(SLACK_WEBHOOK_URL, data=json.dumps({
         'text': '\n'.join(messages),
         'attachments': [{
-            'title': 'WINNER',
+            'title': 'WINNER - {}'.format(winner.trainer.name),
             'fallback': winner.name,
             'text': '{} ({})'.format(winner.name, winner.trainer.name),
             'color': '#22D683',
             'image_url': winner.image
         }, {
-            'title': 'LOSER',
+            'title': 'LOSER - {}'.format(loser.trainer.name),
             'fallback': loser.name,
             'text': '{} ({})'.format(loser.name, loser.trainer.name),
             'color': '#D73F33',
