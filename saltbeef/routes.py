@@ -1,24 +1,66 @@
 import json
 import requests
-from flask import jsonify, request
+from flask import request
 from saltbeef import app, db, models
 from config import SLACK_WEBHOOK_URL
 
 
-@app.route('/')
+valid_cmds = {
+    'battle': [str],
+    'items': [],
+    'equip': [int],
+    'creatures': [],
+    'ichoose': [int]
+}
+
+def parse_slack_cmd(input):
+    parts = input.split(' ')
+
+    cmd = parts[0]
+    raw_args = parts[1:]
+    if cmd not in valid_cmds:
+        return 'Invalid command'
+
+    # Validate number of arguments
+    valid_args = valid_cmds[cmd]
+    if len(raw_args) != len(valid_args):
+        return '{} accepts {} arguments, not {}.'.format(cmd, len(valid_args), len(raw_args))
+
+    # Validate argument types
+    args = []
+    for arg, arg_type in zip(raw_args, valid_args):
+        try:
+            args.append(arg_type(arg))
+        except ValueError:
+            return '{} is not a {}!'.format(arg, arg_type)
+
+    return cmd, args
+
+
+@app.route('/', methods=['POST'])
 def index():
-    return jsonify(results={
-        'message': 'saltbeef'
-    })
+    name = request.form['user_name']
+    cmd, args = parse_slack_cmd(request.form['text'])
+    trainer = models.Trainer.get_or_create(name)
+
+    if cmd == 'creatures':
+        return creatures(trainer, *args)
+    elif cmd == 'items':
+        return items(trainer, *args)
+    elif cmd == 'equip':
+        return equip(trainer, *args)
+    elif cmd == 'ichoose':
+        return choose(trainer, *args)
+    elif cmd == 'battle':
+        return battle(trainer, *args)
+
+    return ''
 
 
-@app.route('/creatures', methods=['POST'])
-def creatures():
+def creatures(trainer):
     """
     List creatures for a trainer.
     """
-    name = request.form['user_name']
-    trainer = models.Trainer.get_or_create(name)
     creatures = [str(c) for c in trainer.creatures]
 
     if not creatures:
@@ -35,14 +77,10 @@ def creatures():
     return '\n'.join(messages)
 
 
-@app.route('/items', methods=['POST'])
-def items():
+def items(trainer):
     """
     List items for a trainer.
     """
-    name = request.form['user_name']
-    trainer = models.Trainer.get_or_create(name)
-
     if not trainer.items:
         messages = [
             'You have no items.'
@@ -58,23 +96,12 @@ def items():
     return '\n'.join(messages)
 
 
-@app.route('/equip', methods=['POST'])
-def equip():
+def equip(trainer, item_id):
     """
     Equip an item (one-time use)
     """
-    name = request.form['user_name']
-    trainer = models.Trainer.get_or_create(name)
-
     try:
-        i = int(request.form['text'])
-    except ValueError:
-        return 'That\'s not a number!'
-    except KeyError:
-        return 'Tell me the number of the item you want to equip!'
-
-    try:
-        item = trainer.items[i]
+        item = trainer.items[item_id]
     except IndexError:
         return 'You don\'t have that many items!'
 
@@ -84,23 +111,12 @@ def equip():
     return 'You equipped {}'.format(item)
 
 
-@app.route('/choose', methods=['POST'])
-def choose():
+def choose(trainer, creature_id):
     """
     Choose a creature.
     """
-    name = request.form['user_name']
-    trainer = models.Trainer.get_or_create(name)
-
     try:
-        i = int(request.form['text'])
-    except ValueError:
-        return 'That\'s not a number!'
-    except KeyError:
-        return 'Tell me the number of the creature you want to use!'
-
-    try:
-        creature = trainer.creatures[i]
+        creature = trainer.creatures[creature_id]
     except IndexError:
         return 'You don\'t have that many creatures!'
 
@@ -110,13 +126,11 @@ def choose():
     return 'You chose {}'.format(creature)
 
 
-@app.route('/random_battle', methods=['POST'])
-def random_battle():
+def battle(atk_user, target_user):
     """
-    Random battle between two users (for testing)
+    Battle between two users
     """
-    atk_user = models.Trainer.get_or_create(request.form['user_name'])
-    dfn_user = models.Trainer.get_or_create(request.form['text'])
+    dfn_user = models.Trainer.get_or_create(target_user)
 
     # Use existing creature if available,
     # otherwise create a new one

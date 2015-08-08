@@ -95,6 +95,9 @@ class Trainer(db.Model):
 
     @classmethod
     def get_or_create(cls, name):
+        if name[0] == '@':
+            name = name[1:]
+
         id = gen_id(name)
         trainer = cls.query.get(id)
         if trainer is None:

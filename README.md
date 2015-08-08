@@ -11,4 +11,5 @@ To setup, from a Python interpreter do:
 - add in experience/leveling up/_EVOLUTION_??
 - document endpoints
 - add supervisord/nginx example scripts
-- add in some notes about slack integration (`/battle`, `/items`, `/equip`, `/creatures`, `/ichoose`)
+- add in some notes about slack integration
+- images
