@@ -1,4 +1,6 @@
-For simplicity, this just runs off of `sqlite`.
+## Battle in Slack
+
+Resolve beefs or make tough decisions by duking it out!
 
 ![](scrot.png)
 
@@ -26,6 +28,8 @@ To setup the database, run the following from a Python interpreter:
 
     from saltbeef import db
     db.create_all()
+
+For simplicity, this just runs off of `sqlite`.
 
 ### Hosting
 
