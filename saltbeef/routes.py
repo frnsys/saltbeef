@@ -217,6 +217,7 @@ def battle(atk_user, target_user):
         target_user = 'EVIL-{}'.format(target_user)
 
     dfn_user = models.Trainer.get_or_create(target_user)
+    db.session.add(dfn_user)
 
     messages = ['*{}* IS ATTACKING *{}*!!'.format(atk_user.name, dfn_user.name)]
 
