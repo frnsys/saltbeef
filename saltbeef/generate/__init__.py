@@ -1,6 +1,5 @@
 import random
 from saltbeef.generate import data, markov
-from saltbeef.generate.image import image
 
 animals = data.load_lexicon('data/animals.txt')
 adjs = data.load_lexicons('data/adjectives/*.txt')

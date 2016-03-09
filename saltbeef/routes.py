@@ -102,10 +102,9 @@ def creatures(trainer):
     else:
         messages = [
             'You have these creatures:',
-            '\n'.join(['[{}] {} {} {}'.format(
+            '\n'.join(['[{}] {} {}'.format(
                 i,
                 creature,
-                '<{}>'.format(creature.image) if creature.image else '',
                 '(Active)' if creature.active else '')
                 for i, creature in enumerate(creatures)]),
             'To choose a creature, say `/pokemon ichoose <creature #>`'
@@ -278,14 +277,12 @@ def battle(atk_user, target_user):
             'title': 'WINNER - {}'.format(winner.trainer.name),
             'fallback': winner.name,
             'text': '{} ({})'.format(winner.name, winner.trainer.name),
-            'color': '#22D683',
-            'image_url': winner.image
+            'color': '#22D683'
         }, {
             'title': 'LOSER - {}'.format(loser.trainer.name),
             'fallback': loser.name,
             'text': '{} ({})'.format(loser.name, loser.trainer.name),
-            'color': '#D73F33',
-            'image_url': loser.image
+            'color': '#D73F33'
         }]
     }))
 
